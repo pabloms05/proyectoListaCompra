@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ListaController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\GoogleController;
@@ -18,9 +19,16 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+<<<<<<< Updated upstream
 /* Rutas boton google */
 Route::get('/auth/google/redirect', [GoogleController::class, 'redirect'])->name('auth.google.redirect');
 Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('auth.google.callback');
+=======
+Route::middleware('auth')->group(function() {
+    Route::get('/home', [ListaController::class, 'index'])->name('home');
+    // rutas de listas, etc.
+});
+>>>>>>> Stashed changes
 
 
 require __DIR__.'/auth.php';

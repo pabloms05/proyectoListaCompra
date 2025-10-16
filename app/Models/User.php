@@ -9,6 +9,8 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
+    
+    
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
@@ -38,34 +40,10 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
 
-/**
- * Obtiene las listas que el usuario ha creado (owner)
- *
- * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\Lista>
- */
-public function listas(): \Illuminate\Database\Eloquent\Relations\HasMany
-{
-    return $this->hasMany(Lista::class, 'owner_id');
-}
-
-/**
- * Obtiene las listas que le han sido compartidas al usuario
- *
- * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<\App\Models\Lista>
- */
-public function listasCompartidas(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
-{
-    return $this->belongsToMany(Lista::class, 'lista_user')
-                ->withPivot('role')
-                ->withTimestamps();
-}
 
 }

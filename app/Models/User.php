@@ -46,26 +46,4 @@ class User extends Authenticatable
         ];
     }
 
-/**
- * Obtiene las listas que el usuario ha creado (owner)
- *
- * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\Lista>
- */
-public function listas(): \Illuminate\Database\Eloquent\Relations\HasMany
-{
-    return $this->hasMany(Lista::class, 'owner_id');
-}
-
-/**
- * Obtiene las listas que le han sido compartidas al usuario
- *
- * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<\App\Models\Lista>
- */
-public function listasCompartidas(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
-{
-    return $this->belongsToMany(Lista::class, 'lista_user')
-                ->withPivot('role')
-                ->withTimestamps();
-}
-
 }

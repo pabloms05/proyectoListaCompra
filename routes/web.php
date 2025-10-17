@@ -2,8 +2,9 @@
 
 use App\Http\Controllers\ListaController;
 use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\GoogleController;
+use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
@@ -20,11 +21,16 @@ Route::middleware('auth')->group(function () {
 });
 
 /* Rutas boton google */
-Route::get('/auth/google/redirect', [GoogleController::class, 'redirect'])->name('auth.google.redirect');
+/* Route::get('/auth/google/redirect', [GoogleController::class, 'redirect'])->name('auth.google.redirect');
 Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('auth.google.callback');
 Route::middleware('auth')->group(function() {
     // rutas de listas, etc.
-});
+}); */
+
+/* Rutas boton google */
+
+Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('google.login');
+Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('google.callback');
 
 
 require __DIR__.'/auth.php';

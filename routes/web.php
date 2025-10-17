@@ -21,13 +21,6 @@ Route::middleware('auth')->group(function () {
 });
 
 /* Rutas boton google */
-/* Route::get('/auth/google/redirect', [GoogleController::class, 'redirect'])->name('auth.google.redirect');
-Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('auth.google.callback');
-Route::middleware('auth')->group(function() {
-    // rutas de listas, etc.
-}); */
-
-/* Rutas boton google */
 
 Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('google.login');
 Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('google.callback');

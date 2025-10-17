@@ -22,10 +22,7 @@ Route::middleware('auth')->group(function () {
 /* Rutas boton google */
 Route::get('/auth/google/redirect', [GoogleController::class, 'redirect'])->name('auth.google.redirect');
 Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('auth.google.callback');
-Route::middleware('auth')->group(function() {
-    Route::get('/home', [ListaController::class, 'index'])->name('home');
-    // rutas de listas, etc.
-});
+
 
 
 require __DIR__.'/auth.php';

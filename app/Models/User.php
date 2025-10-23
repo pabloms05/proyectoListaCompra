@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Lista;
 
 class User extends Authenticatable
 {
@@ -21,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'google_id'
     ];
 
     /**
@@ -46,4 +48,22 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * Obtiene las listas que el usuario ha creado
+     */
+    public function listas()
+    {
+        return $this->hasMany(Lista::class, 'owner_id');
+    }
+
+    /**
+     * Obtiene las listas compartidas con este usuario
+     */
+    public function sharedLists()
+    {
+        return $this->belongsToMany(Lista::class, 'lista_user')
+            ->withPivot('role')
+            ->withTimestamps();
+    }
+    
 }

@@ -1,11 +1,20 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Models\Categoria;
 
 use Illuminate\Http\Request;
 
 class CategoriaController extends Controller
 {
+
+public function getCategoriasConProductos()
+{
+    // Carga todas las categorías con sus productos anidados
+    return Categoria::with('productos')->get();
+}
+
+
     /**
      * Display a listing of the resource.
      */

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Lista;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Categoria;
 
 class ListaController extends Controller
 {
@@ -73,16 +74,15 @@ class ListaController extends Controller
      */
     public function store(Request $request)
     {
-        // 1. Validación de los datos principales y anidados
+        // 1. Validación de los datos
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            // Validación de la estructura de categorías y productos
-            'categorias' => 'nullable|array',
-            'categorias.*.name' => 'required_with:categorias|string|max:255',
-            'categorias.*.productos' => 'nullable|array',
-            'categorias.*.productos.*.name' => 'required_with:categorias.*.productos|string|max:255',
-            'categorias.*.productos.*.cantidad' => 'required_with:categorias.*.productos|integer|min:1',
+            // Validar que los productos sean un array
+            'productos' => 'nullable|array',
+            // Validar que cada producto_id exista y que la cantidad sea un entero > 0
+            'productos.*.producto_id' => 'required|exists:productos,id',
+            'productos.*.cantidad' => 'required|integer|min:1',
         ]);
 
         // 2. Crear la Lista principal
@@ -92,35 +92,23 @@ class ListaController extends Controller
             'owner_id' => Auth::id(),
         ]);
 
-        // 3. Procesar las Categorías y Productos
-        if ($request->has('categorias')) {
-            foreach ($request->categorias as $catData) {
-                // Crear la Categoría
-                $categoria = $lista->categorias()->create([
-                    'name' => $catData['name'],
-                ]);
-
-                // Procesar los Productos de esta Categoría
-                if (!empty($catData['productos'])) {
-                    $productosData = [];
-                    foreach ($catData['productos'] as $prodData) {
-                        // Preparamos los datos para la inserción masiva (createMany)
-                        $productosData[] = [
-                            'name' => $prodData['name'],
-                            'cantidad' => $prodData['cantidad'],
-                            'created_at' => now(), // Aseguramos que los timestamps se guarden
-                            'updated_at' => now(),
-                        ];
-                    }
-                    // Insertamos todos los productos de la categoría
-                    $categoria->productos()->createMany($productosData);
-                }
+        // 3. Vinculación de Productos (attach)
+        if ($request->has('productos')) {
+            $productsToAttach = [];
+            foreach ($request->productos as $productData) {
+                $productsToAttach[$productData['producto_id']] = [
+                    'cantidad' => $productData['cantidad']
+                    // Si necesitas guardar el categoria_id en la pivot:
+                    // 'categoria_id' => Producto::find($productData['producto_id'])->categoria_id
+                ];
             }
+            // Adjuntar los productos a la lista, incluyendo la cantidad
+            $lista->productos()->attach($productsToAttach);
         }
 
         // 4. Redirección
         return redirect()->route('listas.show', $lista)
-            ->with('success', 'Lista creada exitosamente con sus categorías y productos.');
+            ->with('success', 'Lista creada exitosamente y productos vinculados.');
     }
     /**
      * Share a list with another user.
@@ -157,14 +145,18 @@ class ListaController extends Controller
     public function edit(Lista $lista)
     {
         $user = Auth::user();
-
-        // Autorización: Solo el propietario puede editar la lista principal (o si tienes roles de editor definidos)
         if ($lista->owner_id !== $user->id) {
             abort(403, "No tienes permiso para editar esta lista.");
         }
 
-        // Simplemente pasamos el objeto lista a la vista
-        return view('listas.edit', compact('lista'));
+        // 1. Obtener todas las categorías con sus productos para los SELECTS
+        $categoriasMaestras = Categoria::with('productos')->get();
+
+        // 2. Obtener los productos actualmente vinculados a esta lista, incluyendo la cantidad
+        // Usamos withPivot('cantidad') para obtener el dato de la tabla intermedia
+        $productosLista = $lista->productos()->withPivot('cantidad')->get();
+
+        return view('listas.edit', compact('lista', 'categoriasMaestras', 'productosLista'));
     }
     /**
      * Update the specified resource in storage.
@@ -173,94 +165,46 @@ class ListaController extends Controller
     {
         $user = Auth::user();
 
-        // Autorización (re-verificación)
+        // 1. Autorización
         if ($lista->owner_id !== $user->id) {
             abort(403, "No tienes permiso para actualizar esta lista.");
         }
 
-        // 1. Validación de los datos
+        // 2. Validación de los datos (Misma que en store)
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'categorias' => 'nullable|array',
-            // Si tiene 'id', es una categoría existente; si no, es nueva (temp_)
-            'categorias.*.id' => 'nullable|string',
-            'categorias.*.name' => 'required_with:categorias|string|max:255',
-
-            'categorias.*.productos' => 'nullable|array',
-            'categorias.*.productos.*.id' => 'nullable|string',
-            'categorias.*.productos.*.name' => 'required_with:categorias.*.productos|string|max:255',
-            'categorias.*.productos.*.cantidad' => 'required_with:categorias.*.productos|integer|min:1',
-            // Nota: Los campos de imagen deben ser manejados en otro controlador (ProductoController) o con un Request diferente
+            'productos' => 'nullable|array',
+            'productos.*.producto_id' => 'required|exists:productos,id',
+            'productos.*.cantidad' => 'required|integer|min:1',
         ]);
 
-        // 2. Actualización de la lista principal
+        // 3. Actualización de la lista principal
         $lista->update([
             'name' => $request->name,
             'description' => $request->description,
         ]);
 
-        // --- Procesamiento de Categorías y Productos ---
+        // 4. Sincronización de Productos (sync)
+        $syncData = [];
+        if ($request->has('productos')) {
+            foreach ($request->productos as $productData) {
+                $productoId = $productData['producto_id'];
+                $cantidad = $productData['cantidad'];
 
-        $incomingCategoryIds = [];
-
-        if ($request->has('categorias')) {
-            foreach ($request->categorias as $catData) {
-
-                // Determinar si es una categoría existente o nueva (basado en el ID)
-                $isNewCategory = str_starts_with($catData['id'] ?? '', 'temp_');
-
-                if ($isNewCategory) {
-                    // CREAR nueva categoría
-                    $categoria = $lista->categorias()->create(['name' => $catData['name']]);
-                } else {
-                    // ACTUALIZAR categoría existente
-                    $categoria = $lista->categorias()->findOrFail($catData['id']);
-                    $categoria->update(['name' => $catData['name']]);
-                }
-
-                $incomingCategoryIds[] = $categoria->id;
-
-                // Procesar Productos
-                $incomingProductIds = [];
-
-                if (!empty($catData['productos'])) {
-                    foreach ($catData['productos'] as $prodData) {
-
-                        // Determinar si es un producto existente o nuevo
-                        $isNewProduct = str_starts_with($prodData['id'] ?? '', 'temp_');
-
-                        if ($isNewProduct) {
-                            // CREAR nuevo producto (sin imagen por ahora, se deja para la vista show/edit de producto)
-                            $producto = $categoria->productos()->create([
-                                'name' => $prodData['name'],
-                                'cantidad' => $prodData['cantidad'],
-                            ]);
-                        } else {
-                            // ACTUALIZAR producto existente
-                            $producto = $categoria->productos()->findOrFail($prodData['id']);
-                            $producto->update([
-                                'name' => $prodData['name'],
-                                'cantidad' => $prodData['cantidad'],
-                            ]);
-                        }
-                        $incomingProductIds[] = $producto->id;
-                    }
-                }
-
-                // ELIMINAR productos que no fueron enviados en el request
-                $categoria->productos()->whereNotIn('id', $incomingProductIds)->delete();
+                // Preparamos el array de sincronización: [producto_id => [pivot_data]]
+                $syncData[$productoId] = ['cantidad' => $cantidad];
             }
         }
 
-        // ELIMINAR categorías que no fueron enviadas en el request
-        $lista->categorias()->whereNotIn('id', $incomingCategoryIds)->delete();
+        // Sincronizar la relación Muchos a Muchos. Esto añade, actualiza o elimina productos.
+        $lista->productos()->sync($syncData);
 
-
-        // 3. Redirección y mensaje de éxito
+        // 5. Redirección
         return redirect()->route('listas.show', $lista)
             ->with('success', 'Lista "' . $lista->name . '" actualizada y sincronizada exitosamente.');
     }
+
     /**
      * Remove the specified resource from storage.
      */

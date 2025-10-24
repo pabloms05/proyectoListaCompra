@@ -3,26 +3,31 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <h2 class="text-2xl font-semibold mb-6">Crear Nueva Lista</h2>
+                    <h2 class="text-2xl font-semibold mb-6">Editar Lista: {{ $lista->name }}</h2>
                     
-                    <form action="{{ route('listas.store') }}" method="POST" class="max-w-4xl" x-data="{
-                        // Estructura de datos para categorías y productos
-                        categorias: [{ 
-                            id: 'temp_0', 
-                            name: 'General', 
-                            productos: [{ id: 'temp_p0', name: '', cantidad: 1 }] 
-                        }]
+                    <form action="{{ route('listas.update', $lista) }}" method="POST" class="max-w-4xl" x-data="{
+                        // Usamos json_encode para pasar la estructura de datos anidada de PHP a JavaScript
+                        categorias: {{ $lista->categorias->map(function($categoria) {
+                            return [
+                                'id' => $categoria->id,
+                                'name' => $categoria->name,
+                                'productos' => $categoria->productos->map(fn($p) => [
+                                    'id' => $p->id, 
+                                    'name' => $p->name, 
+                                    'cantidad' => $p->cantidad
+                                ])->toArray()
+                            ];
+                        })->toJson() }}
                     }">
                         @csrf
-                        
-                        <div class="mb-6">
+                        @method('PUT') <div class="mb-6">
                             <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 TITULO
                             </label>
                             <input type="text" 
                                    id="name" 
                                    name="name" 
-                                   value="{{ old('name') }}" 
+                                   value="{{ old('name', $lista->name) }}" 
                                    required
                                    class="w-full rounded-md shadow-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600" />
                             @error('name')
@@ -37,21 +42,22 @@
                             <textarea id="description" 
                                       name="description" 
                                       rows="4"
-                                      class="w-full rounded-md shadow-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600">{{ old('description') }}</textarea>
+                                      class="w-full rounded-md shadow-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600">{{ old('description', $lista->description) }}</textarea>
                             @error('description')
                                 <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                             @enderror
                         </div>
 
                         <div class="mb-6 border-t pt-6 dark:border-gray-700">
-                            <h3 class="text-xl font-semibold mb-4">Añadir Categorías y Productos</h3>
+                            <h3 class="text-xl font-semibold mb-4">Categorías y Productos</h3>
 
                             <div x-data="{ 
+                                // Funciones para añadir/borrar categorías y productos
                                 addCategoria() {
                                     this.categorias.push({
-                                        id: 'temp_' + Date.now(),
+                                        id: 'temp_' + Date.now(), // Usar ID temporal para las nuevas
                                         name: 'Nueva Categoría',
-                                        productos: [{ id: 'temp_p' + Date.now() + 'a', name: '', cantidad: 1 }]
+                                        productos: [{ id: 'temp_p' + Date.now() + 'a', name: '', cantidad: 1 }] 
                                     });
                                 },
                                 addProducto(categoria) {
@@ -135,7 +141,7 @@
                             </a>
                             <button type="submit" 
                                     class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700">
-                                Crear Lista
+                                Guardar Cambios
                             </button>
                         </div>
                     </form>

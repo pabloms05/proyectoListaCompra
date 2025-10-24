@@ -9,13 +9,11 @@ class Producto extends Model
 {
     use HasFactory;
 
-    protected $table = 'productos';
     protected $primaryKey = 'id_producto';
-    public $incrementing = false;
-    protected $keyType = 'string';
+    public $incrementing = true;
+    protected $keyType = 'int';
 
     protected $fillable = [
-        'id_producto',
         'nombre',
         'id_categoria',
         'unidad_medida',

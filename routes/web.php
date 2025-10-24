@@ -5,6 +5,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Auth\GoogleController;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CategoriaController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -24,6 +25,8 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('google.login');
 Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('google.callback');
+
+Route::resource('categories', CategoriaController::class);
 
 
 require __DIR__.'/auth.php';

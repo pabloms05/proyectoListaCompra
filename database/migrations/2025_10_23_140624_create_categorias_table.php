@@ -9,15 +9,18 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void {
+    public function up(): void
+    {
         Schema::create('categorias', function (Blueprint $table) {
-            $table->string('id_categoria', 10)->primary();
+            $table->id('id_categoria'); // BIGINT autoincremental
             $table->string('nombre', 50)->unique();
+            $table->string('image')->nullable();
             $table->timestamps();
         });
     }
 
-    public function down(): void {
+    public function down(): void
+    {
         Schema::dropIfExists('categorias');
     }
 };

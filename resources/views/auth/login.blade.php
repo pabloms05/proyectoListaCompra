@@ -108,6 +108,15 @@
           </div>
         </div>
 
+        <!-- Boton Inicio Sesion Google -->
+        <div style="margin-top:1.5rem; display:flex; gap:.7rem; justify-content:center;">
+          <a href="{{ route('google.login') }}" class="google-btn" aria-label="Iniciar sesión con Google">
+            <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google">
+            <span>Iniciar con Google</span>
+          </a>
+        </div>
+      </form>
+
         <!-- Separador -->
         <div style="margin: 1.5rem 0; text-align: center; color: rgba(255,255,255,0.6);">
           ¿No tienes cuenta aún?
@@ -120,15 +129,6 @@
           </a>
         </div>
 
-        <!-- Boton Inicio Sesion Google -->
-        <div style="margin-top:1.5rem; display:flex; gap:.7rem; justify-content:center;">
-          <a href="{{ route('google.login') }}" class="google-btn" aria-label="Iniciar sesión con Google">
-            <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google">
-            <span>Iniciar con Google</span>
-          </a>
-        </div>
-      </form>
-
-      <footer class="auth-foot">© {{ date('Y') }} Lista de Compras — Diseñado con 💜</footer>
+      <footer class="auth-foot">© {{ date('Y') }} Listas de la Compra — Alejandro y Pablo</footer>
     </div>
 </x-guest-layout>

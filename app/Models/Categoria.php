@@ -11,17 +11,18 @@ class Categoria extends Model
 
     protected $table = 'categorias';
     protected $primaryKey = 'id_categoria';
-    public $incrementing = false;
-    protected $keyType = 'string';
+    public $incrementing = true;
+    protected $keyType = 'int';
 
     protected $fillable = [
-        'id_categoria',
         'nombre',
+        'image',
     ];
 
-    // 🛍️ Productos de esta categoría
+    // 🛍️ Relación: una categoría tiene muchos productos
     public function productos()
     {
         return $this->hasMany(Producto::class, 'id_categoria');
     }
 }
+

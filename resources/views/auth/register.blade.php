@@ -101,6 +101,6 @@
         </div>
       </form>
 
-      <footer class="auth-foot">© {{ date('Y') }} Lista de Compras — Diseñado con 💜</footer>
+      <footer class="auth-foot">© {{ date('Y') }} Listas de la Compra — Alejandro y Pablo</footer>
     </div>
 </x-guest-layout>

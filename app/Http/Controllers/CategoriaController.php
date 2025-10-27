@@ -39,6 +39,7 @@ public function getCategoriasConProductos()
         //
     }
 
+
     /**
      * Display the specified resource.
      */

@@ -6,31 +6,41 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 use App\Models\User;
+use Laravel\Socialite\Two\InvalidStateException;
+use Illuminate\Support\Facades\Log;
 
 class GoogleController extends Controller
 {
-    // Redirige al usuario a la página de inicio de sesión de Google
     public function redirect()
     {
         return Socialite::driver('google')->redirect();
     }
 
-    // Maneja la respuesta de Google después de la autenticación
     public function callback()
     {
-        $googleUser = Socialite::driver('google')->user();
+        try {
+            // usa el flujo con estado (session) — evita stateless()
+            $googleUser = Socialite::driver('google')->user();
 
-        $user = User::updateOrCreate(
-            ['email' => $googleUser->getEmail()],
-            [
-                'name' => $googleUser->getName(),
-                'google_id' => $googleUser->getId(),
-                'avatar' => $googleUser->getAvatar(),
-            ]
-        );
+            $user = User::updateOrCreate(
+                ['email' => $googleUser->getEmail()],
+                [
+                    'name' => $googleUser->getName(),
+                    'google_id' => $googleUser->getId(),
+                    'avatar' => $googleUser->getAvatar(),
+                ]
+            );
 
-        Auth::login($user);
+            Auth::login($user);
 
-        return redirect()->intended('/');
+            return redirect()->intended('/');
+        } catch (InvalidStateException $e) {
+            // restart OAuth flow (evita mostrar excepción "state")
+            Log::warning('Google OAuth invalid state: '.$e->getMessage());
+            return Socialite::driver('google')->redirect();
+        } catch (\Throwable $e) {
+            Log::error('Google OAuth error: '.$e->getMessage());
+            return redirect()->route('login')->withErrors(['google' => 'Error de autenticación con Google. Intenta de nuevo.']);
+        }
     }
 }

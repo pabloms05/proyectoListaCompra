@@ -10,6 +10,8 @@ use App\Models\Lista;
 
 class User extends Authenticatable
 {
+
+
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
@@ -40,12 +42,15 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
+
+    // 🔗 Relaciones
+    public function listasCreadas()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->hasMany(Lista::class, 'user_id');
     }
 
     /**

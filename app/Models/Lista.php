@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,13 +11,18 @@ class Lista extends Model
 {
     use HasFactory;
 
+    protected $table = 'listas';
+    protected $primaryKey = 'id_lista';
+    public $incrementing = false;
+    protected $keyType = 'string';
+
     protected $fillable = [
         'name', 'description', 'owner_id'
     ];
 
     public function owner(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'owner_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     /**
@@ -27,7 +31,7 @@ class Lista extends Model
      */
     public function categorias(): HasMany
     {
-        return $this->hasMany(Categoria::class);
+        return $this->belongsToMany(User::class, 'lista_compartida', 'id_lista', 'user_id');
     }
     
     // ----------------------------------------------------------------------

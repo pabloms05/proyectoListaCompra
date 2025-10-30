@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Categoria extends Model
 {
     use HasFactory;
-
+    // Hay cambios
     protected $table = 'categorias';
     protected $primaryKey = 'id_categoria';
     public $incrementing = true;

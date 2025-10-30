@@ -7,7 +7,7 @@
                     
                     <form action="{{ route('listas.store') }}" method="POST" class="max-w-4xl" x-data="{
                         // 1. Cargar las categorías y productos maestros desde PHP (Necesitas modificar ListaController::create)
-                        categoriasMaestras: {{ (App\Models\Categoria::with('productos')->get())->toJson() }}, 
+                        categoriasMaestras: {{ (App\Models\Categoria::with('productos')->get())->toJson() }},
                         
                         // 2. Inicializar los productos seleccionados (vacío para creación)
                         productosSeleccionados: [],

@@ -110,7 +110,7 @@
 
         <!-- Boton Inicio Sesion Google -->
         <div style="margin-top:1.5rem; display:flex; gap:.7rem; justify-content:center;">
-          <a href="{{ route('google.login') }}" class="google-btn" aria-label="Iniciar sesión con Google">
+          <a href="{{ route('auth.google.redirect') }}" class="google-btn" aria-label="Iniciar sesión con Google">
             <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google">
             <span>Iniciar con Google</span>
           </a>

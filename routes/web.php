@@ -18,7 +18,7 @@ Route::middleware('auth')->group(function () {
     
     // Rutas del Dashboard/Home
     Route::get('/dashboard', function () {
-        return redirect()->route('home');
+        return redirect()->route('welcome');
     })->name('dashboard');
     Route::get('/home', [HomeController::class, 'index'])->name('home');
     
@@ -26,6 +26,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
+    // Rutas de Listas
+    Route::get('/listas/propias', [ListaController::class, 'propias'])->name('listas.propias');
+    Route::get('/mis-listas', [ListaController::class, 'propias'])->name('mis-listas'); // Alias
+    Route::get('/listas/compartidas', [ListaController::class, 'compartidas'])->name('listas.compartidas');
+    Route::get('/listas-compartidas', [ListaController::class, 'compartidas'])->name('listas-compartidas'); // Alias
+    Route::post('/listas/{lista}/share', [ListaController::class, 'share'])->name('listas.share');
+    Route::resource('listas', ListaController::class);
+    
+    // Rutas de Categorías
+    Route::resource('categorias', CategoriaController::class);
+    
+    // Rutas de Productos
+    Route::resource('productos', ProductoController::class);
 });
 
 /* Rutas boton google */

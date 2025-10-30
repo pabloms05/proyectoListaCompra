@@ -16,12 +16,13 @@ class Producto extends Model
 
     public function categoria()
     {
-        return $this->belongsTo(Categoria::class, 'id_categoria');
+        return $this->belongsTo(Categoria::class, 'categoria_id');
     }
 
-    public function lista()
+    public function listas()
     {
-        // relación indirecta: la lista de la categoría
-        return $this->categoria->lista;
+        return $this->belongsToMany(Lista::class, 'item_lista', 'producto_id', 'lista_id')
+                    ->withPivot('cantidad', 'comprado', 'notas')
+                    ->withTimestamps();
     }
 }

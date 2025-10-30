@@ -57,16 +57,18 @@ class ListaController extends Controller
             abort(403, "No tienes permiso para ver esta lista.");
         }
 
-        // Cargar relaciones de categorías y productos
-        $lista->load('categorias.productos');
+        // Cargar relaciones de productos con su categoría
+        $lista->load('productos.categoria');
 
         // Indicar si el usuario es propietario
         $isOwner = $lista->owner_id === $user->id;
 
-        // Obtener las categorías con sus productos
-        $categorias = $lista->categorias()->with('productos')->get();
+        // Agrupar productos por categoría
+        $productosPorCategoria = $lista->productos->groupBy(function($producto) {
+            return $producto->categoria ? $producto->categoria->name : 'Sin categoría';
+        });
 
-        return view('listas.show', compact('lista', 'isOwner', 'categorias'));
+        return view('listas.show', compact('lista', 'isOwner', 'productosPorCategoria'));
     }
 
     /**

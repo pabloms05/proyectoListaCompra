@@ -48,14 +48,14 @@
                         
                         <div class="lg:col-span-2">
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                @forelse($lista->categorias as $categoria)
+                                @forelse($productosPorCategoria as $categoriaNombre => $productos)
                                     <div class="bg-white dark:bg-gray-700 p-4 rounded-lg shadow">
                                         <h3 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-                                            {{ $categoria->name }}
+                                            {{ $categoriaNombre }}
                                         </h3>
 
                                         <div class="space-y-4">
-                                            @foreach($categoria->productos as $producto)
+                                            @foreach($productos as $producto)
                                                 <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded-md">
                                                     @if($producto->image_path)
                                                         <img src="{{ Storage::url($producto->image_path) }}"
@@ -69,8 +69,13 @@
                                                                 {{ $producto->name }}
                                                             </h4>
                                                             <p class="text-sm text-gray-500 dark:text-gray-400">
-                                                                Cantidad: **{{ $producto->cantidad }}**
+                                                                Cantidad: {{ $producto->pivot->cantidad ?? 1 }}
                                                             </p>
+                                                            @if($producto->pivot->comprado)
+                                                                <span class="inline-flex items-center px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">
+                                                                    ✓ Comprado
+                                                                </span>
+                                                            @endif
                                                         </div>
                                                     </div>
                                                 </div>
@@ -104,9 +109,10 @@
                                     
                                     <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">Categorías en la Lista</h4>
                                     <div class="space-y-2">
-                                        @forelse($lista->categorias as $categoria)
+                                        @forelse($productosPorCategoria as $categoriaNombre => $productos)
                                             <div class="flex items-center justify-between py-2 px-3 bg-white dark:bg-gray-600 rounded-lg">
-                                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ $categoria->name }}</span>
+                                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ $categoriaNombre }}</span>
+                                                <span class="text-xs text-gray-500 dark:text-gray-400">{{ $productos->count() }} productos</span>
                                             </div>
                                         @empty
                                             <p class="text-sm text-gray-500 dark:text-gray-400 text-center">No hay categorías</p>

@@ -2,22 +2,26 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Categoria extends Model
 {
+    use HasFactory;
+    // Hay cambios
+    protected $table = 'categorias';
+    protected $primaryKey = 'id_categoria';
+    public $incrementing = true;
+    protected $keyType = 'int';
+
     protected $fillable = [
-        'name', 'imagen', 'lista_id'
+        'nombre',
+        'image',
     ];
 
-    public function lista()
-    {
-        return $this->belongsTo(Lista::class);
-    }
-
+    // 🛍️ Relación: una categoría tiene muchos productos
     public function productos()
     {
-        return $this->hasMany(Producto::class);
+        return $this->hasMany(Producto::class, 'id_categoria');
     }
 }
-

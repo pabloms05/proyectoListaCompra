@@ -10,14 +10,23 @@ class CreateListaUserTable extends Migration
     {
         Schema::create('lista_user', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('lista_id')
-                  ->constrained('listas')
-                  ->onDelete('cascade');
-            $table->foreignId('user_id')
-                  ->constrained('users')
-                  ->onDelete('cascade');
+            $table->unsignedBigInteger('id_lista');
+            $table->unsignedBigInteger('user_id');
             $table->string('role')->default('editor');
             $table->timestamps();
+
+            $table->foreign('id_lista')
+                  ->references('id_lista')
+                  ->on('listas')
+                  ->onDelete('cascade');
+            
+            $table->foreign('user_id')
+                  ->references('id')
+                  ->on('users')
+                  ->onDelete('cascade');
+
+            // Evitar duplicados
+            $table->unique(['id_lista', 'user_id']);
         });
     }
 

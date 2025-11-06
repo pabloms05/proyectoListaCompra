@@ -11,14 +11,15 @@ return new class extends Migration
      */
     public function up(): void {
         Schema::create('listas', function (Blueprint $table) {
-            $table->string('id_lista', 10)->primary();
-            $table->string('owner_id', 10);
-            $table->string('name', 25);
+            $table->id('id_lista');
+            $table->unsignedBigInteger('owner_id');
+            $table->string('name', 255);
+            $table->text('description')->nullable();
             $table->boolean('compartida')->default(false);
             $table->timestamps();
 
             $table->foreign('owner_id')
-                  ->references('id_usuario')
+                  ->references('id')
                   ->on('users')
                   ->onDelete('cascade');
         });

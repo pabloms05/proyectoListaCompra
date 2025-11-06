@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void {
         Schema::create('item_lista', function (Blueprint $table) {
-            $table->string('id_lista', 10);
-            $table->string('id_producto', 10);
+            $table->unsignedBigInteger('id_lista');
+            $table->unsignedBigInteger('id_producto');
             $table->decimal('cantidad', 8, 2)->default(1);
             $table->boolean('comprado')->default(false);
-            $table->string('notas', 200)->nullable();
+            $table->text('notas')->nullable();
             $table->timestamps();
 
             $table->primary(['id_lista', 'id_producto']);

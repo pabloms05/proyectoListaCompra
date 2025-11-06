@@ -66,7 +66,7 @@ class User extends Authenticatable
      */
     public function sharedLists()
     {
-        return $this->belongsToMany(Lista::class, 'lista_user', 'user_id', 'lista_id')
+        return $this->belongsToMany(Lista::class, 'lista_user', 'user_id', 'id_lista')
             ->withPivot('role')
             ->withTimestamps();
     }

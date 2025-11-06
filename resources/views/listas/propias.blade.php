@@ -24,8 +24,6 @@
                                         <div class="flex justify-between items-center">
                                             <div class="text-sm text-gray-500 dark:text-gray-400">
                                                 <span>{{ $lista->productos_count ?? 0 }} productos</span>
-                                                <span class="mx-2">•</span>
-                                                <span>{{ $lista->categorias_count ?? 0 }} categorías</span>
                                             </div>
                                             <div class="flex space-x-2">
                                                 <a href="{{ route('listas.show', $lista) }}" 

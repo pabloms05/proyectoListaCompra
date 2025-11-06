@@ -32,7 +32,7 @@
 
                             this.productosSeleccionados.push({
                                 id_producto: newProd.id_producto,
-                                nombre: newProd.nombre,
+                                name: newProd.name,
                                 cantidad: this.productoAAnadirCantidad,
                                 id_categoria: newProd.id_categoria,
                                 unidad_medida: newProd.unidad_medida
@@ -72,7 +72,7 @@
                                     <select id="select-prod" x-model="productoAAnadirId" :disabled="!categoriaActual" class="w-full rounded-md shadow-sm border-gray-300 dark:border-gray-600 dark:bg-gray-800 text-white">
                                         <option value="">-- Selecciona Producto --</option>
                                         <template x-for="prod in productosFiltrados" :key="prod.id_producto">
-                                            <option :value="prod.id_producto" x-text="prod.nombre"></option>
+                                            <option :value="prod.id_producto" x-text="prod.name"></option>
                                         </template>
                                     </select>
                                 </div>
@@ -95,9 +95,9 @@
                             <div class="space-y-3">
                                 <template x-for="(producto, index) in productosSeleccionados" :key="producto.id_producto">
                                     <div class="flex items-center space-x-4 p-3 border rounded-md dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
-                                        <span x-text="producto.nombre" class="font-medium flex-1 text-gray-900 dark:text-gray-100"></span>
+                                        <span x-text="producto.name" class="font-medium flex-1 text-gray-900 dark:text-gray-100"></span>
                                         
-                                        <input type="hidden" :name="'productos[' + index + '][id_producto]'" :value="producto.id_producto">
+                                        <input type="hidden" :name="'productos[' + index + '][producto_id]'" :value="producto.id_producto">
 
                                         <div class="w-1/5">
                                             <input type="number"

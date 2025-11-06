@@ -12,42 +12,36 @@ class ProductoSeeder extends Seeder
     {
         $productos = [
             [
-                'id_producto' => 'PROD001',
-                'nombre' => 'Manzana Roja',
-                'id_categoria' => 1, // Frutas
+                'name' => 'Manzana Roja',
+                'categoria_id' => 1, // Frutas
                 'unidad_medida' => 'kg',
             ],
             [
-                'id_producto' => 'PROD002',
-                'nombre' => 'Lechuga',
-                'id_categoria' => 2, // Verduras
+                'name' => 'Lechuga',
+                'categoria_id' => 2, // Verduras
                 'unidad_medida' => 'unidad',
             ],
             [
-                'id_producto' => 'PROD003',
-                'nombre' => 'Pechuga de Pollo',
-                'id_categoria' => 3, // Carnes
+                'name' => 'Pechuga de Pollo',
+                'categoria_id' => 3, // Carnes
                 'unidad_medida' => 'kg',
             ],
             [
-                'id_producto' => 'PROD004',
-                'nombre' => 'Leche Entera',
-                'id_categoria' => 5, // Lácteos
+                'name' => 'Leche Entera',
+                'categoria_id' => 5, // Lácteos
                 'unidad_medida' => 'litro',
             ],
             [
-                'id_producto' => 'PROD005',
-                'nombre' => 'Pan Integral',
-                'id_categoria' => 6, // Panadería
+                'name' => 'Pan Integral',
+                'categoria_id' => 6, // Panadería
                 'unidad_medida' => 'unidad',
             ],
         ];
 
         foreach ($productos as $producto) {
             DB::table('productos')->insert([
-                'id_producto' => $producto['id_producto'],
-                'nombre' => $producto['nombre'],
-                'id_categoria' => $producto['id_categoria'],
+                'name' => $producto['name'],
+                'categoria_id' => $producto['categoria_id'],
                 'unidad_medida' => $producto['unidad_medida'],
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),

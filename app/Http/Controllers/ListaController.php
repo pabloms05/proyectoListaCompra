@@ -31,7 +31,9 @@ class ListaController extends Controller
     public function propias()
     {
         $user = Auth::user();
-        $listas = Lista::where('owner_id', $user->id)->get();
+        $listas = Lista::where('owner_id', $user->id)
+            ->withCount('productos')
+            ->get();
         return view('listas.propias', compact('listas'));
     }
 
@@ -65,7 +67,7 @@ class ListaController extends Controller
 
         // Agrupar productos por categoría
         $productosPorCategoria = $lista->productos->groupBy(function ($producto) {
-            return $producto->categoria ? $producto->categoria->name : 'Sin categoría';
+            return $producto->categoria ? $producto->categoria->nombre : 'Sin categoría';
         });
 
         return view('listas.show', compact('lista', 'isOwner', 'productosPorCategoria'));
@@ -90,6 +92,7 @@ class ListaController extends Controller
         // 2. Crear la Lista principal
         $lista = Lista::create([
             'name' => $request->name,
+            'description' => $request->description,
             'owner_id' => Auth::id(),
             'compartida' => false,
         ]);
@@ -125,19 +128,25 @@ class ListaController extends Controller
         }
 
         $data = $request->validate([
-            'user_email' => 'required|email|exists:users,email'
+            'email' => 'required|email|exists:users,email',
+            'role' => 'required|in:viewer,editor'
         ]);
 
-        $userToShare = \App\Models\User::where('email', $data['user_email'])->first();
+        $userToShare = \App\Models\User::where('email', $data['email'])->first();
 
         if ($userToShare) {
+            // Verificar que no sea el propietario
+            if ($userToShare->id === $lista->owner_id) {
+                return back()->with('error', 'No puedes compartir la lista contigo mismo.');
+            }
+
             // Evitar duplicados
             $lista->sharedUsers()->syncWithoutDetaching([
-                $userToShare->id => ['role' => 'editor']
+                $userToShare->id => ['role' => $data['role']]
             ]);
         }
 
-        return back()->with('status', 'Lista compartida correctamente.');
+        return back()->with('success', 'Lista compartida correctamente.');
     }
 
 

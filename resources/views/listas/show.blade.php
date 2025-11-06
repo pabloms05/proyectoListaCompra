@@ -35,7 +35,7 @@
                                 </form>
                             @endif
                             
-                            <a href="{{ url()->previous() }}" class="inline-flex items-center px-4 py-2 bg-gray-600 rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                            <a href="{{ route('listas.propias') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                                 </svg>
@@ -47,49 +47,72 @@
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         
                         <div class="lg:col-span-2">
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                @forelse($productosPorCategoria as $categoriaNombre => $productos)
-                                    <div class="bg-white dark:bg-gray-700 p-4 rounded-lg shadow">
-                                        <h3 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-                                            {{ $categoriaNombre }}
-                                        </h3>
+                            @forelse($productosPorCategoria as $categoriaNombre => $productos)
+                                <div class="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-lg mb-6">
+                                    <h3 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white border-b-2 border-indigo-500 pb-2">
+                                        📂 {{ $categoriaNombre }}
+                                    </h3>
 
-                                        <div class="space-y-4">
-                                            @foreach($productos as $producto)
-                                                <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded-md">
-                                                    @if($producto->image_path)
-                                                        <img src="{{ Storage::url($producto->image_path) }}"
-                                                            alt="{{ $producto->name }}"
-                                                            class="w-full h-32 object-cover rounded-md mb-2">
-                                                    @endif
-
-                                                    <div class="flex justify-between items-start">
-                                                        <div>
-                                                            <h4 class="font-medium text-gray-900 dark:text-white">
-                                                                {{ $producto->name }}
-                                                            </h4>
-                                                            <p class="text-sm text-gray-500 dark:text-gray-400">
-                                                                Cantidad: {{ $producto->pivot->cantidad ?? 1 }}
-                                                            </p>
-                                                            @if($producto->pivot->comprado)
-                                                                <span class="inline-flex items-center px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">
-                                                                    ✓ Comprado
-                                                                </span>
-                                                            @endif
-                                                        </div>
+                                    <div class="space-y-3">
+                                        @foreach($productos as $producto)
+                                            <div class="flex items-center bg-gray-50 dark:bg-gray-800 p-4 rounded-lg hover:shadow-md transition-shadow">
+                                                @if($producto->image_path)
+                                                    <img src="{{ Storage::url($producto->image_path) }}"
+                                                        alt="{{ $producto->name }}"
+                                                        class="w-20 h-20 object-cover rounded-md mr-4">
+                                                @else
+                                                    <div class="w-20 h-20 bg-gray-300 dark:bg-gray-600 rounded-md mr-4 flex items-center justify-center">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                                        </svg>
                                                     </div>
+                                                @endif
+
+                                                <div class="flex-1">
+                                                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white">
+                                                        {{ $producto->name }}
+                                                    </h4>
+                                                    <div class="flex items-center space-x-4 mt-1">
+                                                        <p class="text-sm text-gray-600 dark:text-gray-300">
+                                                            <span class="font-medium">Cantidad:</span> 
+                                                            <span class="text-indigo-600 dark:text-indigo-400 font-bold">{{ $producto->pivot->cantidad ?? 1 }}</span>
+                                                            @if($producto->unidad_medida)
+                                                                {{ $producto->unidad_medida }}
+                                                            @endif
+                                                        </p>
+                                                        @if($producto->pivot->comprado)
+                                                            <span class="inline-flex items-center px-3 py-1 text-xs font-bold text-green-800 bg-green-100 rounded-full">
+                                                                ✓ Comprado
+                                                            </span>
+                                                        @else
+                                                            <span class="inline-flex items-center px-3 py-1 text-xs font-bold text-gray-600 bg-gray-200 rounded-full">
+                                                                ⏳ Pendiente
+                                                            </span>
+                                                        @endif
+                                                    </div>
+                                                    @if($producto->pivot->notas)
+                                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                            📝 {{ $producto->pivot->notas }}
+                                                        </p>
+                                                    @endif
                                                 </div>
-                                            @endforeach
-                                        </div>
+                                            </div>
+                                        @endforeach
                                     </div>
-                                @empty
-                                    <div class="col-span-full">
-                                        <p class="text-gray-500 dark:text-gray-400 text-center">
-                                            Esta lista está vacía. Usa el botón **Editar** para añadir categorías y productos.
-                                        </p>
-                                    </div>
-                                @endforelse
-                            </div>
+                                </div>
+                            @empty
+                                <div class="col-span-full bg-white dark:bg-gray-700 p-12 rounded-lg shadow text-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 mx-auto text-gray-400 dark:text-gray-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                    </svg>
+                                    <p class="text-xl text-gray-500 dark:text-gray-400 mb-4">Esta lista está vacía</p>
+                                    @if($isOwner)
+                                        <a href="{{ route('listas.edit', $lista) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 rounded-md font-semibold text-xs text-white uppercase hover:bg-indigo-700">
+                                            Añadir productos
+                                        </a>
+                                    @endif
+                                </div>
+                            @endforelse
                         </div>
 
                         <div class="lg:col-span-1 space-y-4">

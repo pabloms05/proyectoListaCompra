@@ -12,7 +12,7 @@
                         // 2. Inicializar los productos de la lista actual (para edición)
                         productosSeleccionados: {{ $productosLista->map(function($p) {
                             return [
-                                'id' => $p->id, // ID del producto maestro
+                                'id_producto' => $p->id_producto, // ID del producto maestro
                                 'name' => $p->name, // Nombre del producto maestro
                                 'cantidad' => $p->pivot->cantidad, // Cantidad de la tabla pivot
                                 'categoria_id' => $p->categoria_id, // ID de la categoría del producto
@@ -27,7 +27,7 @@
                         
                         // Función para filtrar productos al seleccionar una categoría
                         filtrarProductos() {
-                            const cat = this.categoriasMaestras.find(c => c.id == this.categoriaActual);
+                            const cat = this.categoriasMaestras.find(c => c.id_categoria == this.categoriaActual);
                             this.productosFiltrados = cat ? cat.productos : [];
                             this.productoAAnadirId = ''; // Resetear el producto seleccionado
                         },
@@ -36,17 +36,17 @@
                         addProducto() {
                             if (!this.productoAAnadirId) return;
 
-                            const cat = this.categoriasMaestras.find(c => c.id == this.categoriaActual);
-                            const newProd = cat.productos.find(p => p.id == this.productoAAnadirId);
+                            const cat = this.categoriasMaestras.find(c => c.id_categoria == this.categoriaActual);
+                            const newProd = cat.productos.find(p => p.id_producto == this.productoAAnadirId);
 
                             // Verificar si el producto ya está en la lista para evitar duplicados
-                            if (this.productosSeleccionados.some(p => p.id === newProd.id)) {
+                            if (this.productosSeleccionados.some(p => p.id_producto === newProd.id_producto)) {
                                 alert('Este producto ya ha sido añadido a la lista.');
                                 return;
                             }
 
                             this.productosSeleccionados.push({
-                                id: newProd.id,
+                                id_producto: newProd.id_producto,
                                 name: newProd.name,
                                 cantidad: this.productoAAnadirCantidad,
                                 categoria_id: newProd.categoria_id
@@ -75,8 +75,8 @@
                                     <label for="select-cat" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Categoría</label>
                                     <select id="select-cat" x-model="categoriaActual" @change="filtrarProductos()" class="w-full rounded-md shadow-sm border-gray-300 dark:border-gray-600 dark:bg-gray-800 text-white">
                                         <option value="">-- Selecciona Categoría --</option>
-                                        <template x-for="cat in categoriasMaestras" :key="cat.id">
-                                            <option :value="cat.id" x-text="cat.name"></option>
+                                        <template x-for="cat in categoriasMaestras" :key="cat.id_categoria">
+                                            <option :value="cat.id_categoria" x-text="cat.nombre"></option>
                                         </template>
                                     </select>
                                 </div>
@@ -85,8 +85,8 @@
                                     <label for="select-prod" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Producto</label>
                                     <select id="select-prod" x-model="productoAAnadirId" :disabled="!categoriaActual" class="w-full rounded-md shadow-sm border-gray-300 dark:border-gray-600 dark:bg-gray-800 text-white">
                                         <option value="">-- Selecciona Producto --</option>
-                                        <template x-for="prod in productosFiltrados" :key="prod.id">
-                                            <option :value="prod.id" x-text="prod.name"></option>
+                                        <template x-for="prod in productosFiltrados" :key="prod.id_producto">
+                                            <option :value="prod.id_producto" x-text="prod.name"></option>
                                         </template>
                                     </select>
                                 </div>
@@ -106,12 +106,12 @@
                             <h3 class="text-xl font-semibold mb-4">Productos en la Lista (<span x-text="productosSeleccionados.length"></span>)</h3>
 
                             <div class="space-y-3">
-                                <template x-for="(producto, index) in productosSeleccionados" :key="producto.id">
+                                <template x-for="(producto, index) in productosSeleccionados" :key="producto.id_producto">
                                     <div class="flex items-center space-x-4 p-3 border rounded-md dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
                                         
                                         <span x-text="producto.name" class="font-medium flex-1 text-gray-900 dark:text-gray-100"></span>
                                         
-                                        <input type="hidden" :name="'productos[' + index + '][producto_id]'" :value="producto.id">
+                                        <input type="hidden" :name="'productos[' + index + '][producto_id]'" :value="producto.id_producto">
 
                                         <div class="w-1/5">
                                             <input type="number"
@@ -135,7 +135,13 @@
                             </div>
                         </div>
 
-                        <div class="flex justify-end mt-6">
+                        <div class="flex justify-between mt-6">
+                            <a href="{{ route('listas.show', $lista) }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                </svg>
+                                Volver
+                            </a>
                             <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700">
                                 Guardar Cambios
                             </button>

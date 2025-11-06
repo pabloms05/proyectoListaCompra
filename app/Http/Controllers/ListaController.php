@@ -64,7 +64,7 @@ class ListaController extends Controller
         $isOwner = $lista->owner_id === $user->id;
 
         // Agrupar productos por categoría
-        $productosPorCategoria = $lista->productos->groupBy(function($producto) {
+        $productosPorCategoria = $lista->productos->groupBy(function ($producto) {
             return $producto->categoria ? $producto->categoria->name : 'Sin categoría';
         });
 
@@ -83,15 +83,15 @@ class ListaController extends Controller
             // Validar que los productos sean un array
             'productos' => 'nullable|array',
             // Validar que cada producto_id exista y que la cantidad sea un entero > 0
-            'productos.*.producto_id' => 'required|exists:productos,id',
+            'productos.*.producto_id' => 'required|exists:productos,id_producto',
             'productos.*.cantidad' => 'required|integer|min:1',
         ]);
 
         // 2. Crear la Lista principal
         $lista = Lista::create([
             'name' => $request->name,
-            'description' => $request->description,
             'owner_id' => Auth::id(),
+            'compartida' => false,
         ]);
 
         // 3. Vinculación de Productos (attach)
@@ -177,7 +177,7 @@ class ListaController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'productos' => 'nullable|array',
-            'productos.*.producto_id' => 'required|exists:productos,id',
+            'productos.*.producto_id' => 'required|exists:productos,id_producto',
             'productos.*.cantidad' => 'required|integer|min:1',
         ]);
 

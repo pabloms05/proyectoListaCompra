@@ -9,25 +9,30 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
-    {
+    public function up(): void {
         Schema::create('item_lista', function (Blueprint $table) {
-            $table->foreignId('lista_id')->constrained('listas')->onDelete('cascade');
-            $table->foreignId('producto_id')->constrained('productos')->onDelete('cascade');
+            $table->string('id_lista', 10);
+            $table->string('id_producto', 10);
             $table->decimal('cantidad', 8, 2)->default(1);
             $table->boolean('comprado')->default(false);
             $table->string('notas', 200)->nullable();
             $table->timestamps();
 
-            $table->primary(['lista_id', 'producto_id']);
+            $table->primary(['id_lista', 'id_producto']);
+
+            $table->foreign('id_lista')
+                  ->references('id_lista')
+                  ->on('listas')
+                  ->onDelete('cascade');
+
+            $table->foreign('id_producto')
+                  ->references('id_producto')
+                  ->on('productos')
+                  ->onDelete('cascade');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
+    public function down(): void {
         Schema::dropIfExists('item_lista');
     }
 };

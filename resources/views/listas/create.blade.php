@@ -6,42 +6,36 @@
                     <h2 class="text-2xl font-semibold mb-6">Crear Nueva Lista</h2>
                     
                     <form action="{{ route('listas.store') }}" method="POST" class="max-w-4xl" x-data="{
-                        // 1. Cargar las categorías y productos maestros desde PHP (Necesitas modificar ListaController::create)
                         categoriasMaestras: {{ (App\Models\Categoria::with('productos')->get())->toJson() }},
-                        
-                        // 2. Inicializar los productos seleccionados (vacío para creación)
                         productosSeleccionados: [],
-                        
-                        // 3. Variables para el selector 'Añadir Producto'
                         categoriaActual: '',
                         productosFiltrados: [],
                         productoAAnadirId: '',
                         productoAAnadirCantidad: 1,
                         
-                        // Función para filtrar productos
                         filtrarProductos() {
-                            const cat = this.categoriasMaestras.find(c => c.id == this.categoriaActual);
+                            const cat = this.categoriasMaestras.find(c => c.id_categoria == this.categoriaActual);
                             this.productosFiltrados = cat ? cat.productos : [];
                             this.productoAAnadirId = '';
                         },
                         
-                        // Función para añadir el producto a la lista
                         addProducto() {
                             if (!this.productoAAnadirId) return;
 
-                            const cat = this.categoriasMaestras.find(c => c.id == this.categoriaActual);
-                            const newProd = cat.productos.find(p => p.id == this.productoAAnadirId);
+                            const cat = this.categoriasMaestras.find(c => c.id_categoria == this.categoriaActual);
+                            const newProd = cat.productos.find(p => p.id_producto == this.productoAAnadirId);
 
-                            if (this.productosSeleccionados.some(p => p.id === newProd.id)) {
+                            if (this.productosSeleccionados.some(p => p.id_producto === newProd.id_producto)) {
                                 alert('Este producto ya ha sido añadido a la lista.');
                                 return;
                             }
 
                             this.productosSeleccionados.push({
-                                id: newProd.id,
-                                name: newProd.name,
+                                id_producto: newProd.id_producto,
+                                nombre: newProd.nombre,
                                 cantidad: this.productoAAnadirCantidad,
-                                categoria_id: newProd.categoria_id
+                                id_categoria: newProd.id_categoria,
+                                unidad_medida: newProd.unidad_medida
                             });
 
                             this.productoAAnadirId = '';
@@ -67,8 +61,8 @@
                                     <label for="select-cat" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Categoría</label>
                                     <select id="select-cat" x-model="categoriaActual" @change="filtrarProductos()" class="w-full rounded-md shadow-sm border-gray-300 dark:border-gray-600 dark:bg-gray-800 text-white">
                                         <option value="">-- Selecciona Categoría --</option>
-                                        <template x-for="cat in categoriasMaestras" :key="cat.id">
-                                            <option :value="cat.id" x-text="cat.name"></option>
+                                        <template x-for="cat in categoriasMaestras" :key="cat.id_categoria">
+                                            <option :value="cat.id_categoria" x-text="cat.nombre"></option>
                                         </template>
                                     </select>
                                 </div>
@@ -77,8 +71,8 @@
                                     <label for="select-prod" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Producto</label>
                                     <select id="select-prod" x-model="productoAAnadirId" :disabled="!categoriaActual" class="w-full rounded-md shadow-sm border-gray-300 dark:border-gray-600 dark:bg-gray-800 text-white">
                                         <option value="">-- Selecciona Producto --</option>
-                                        <template x-for="prod in productosFiltrados" :key="prod.id">
-                                            <option :value="prod.id" x-text="prod.name"></option>
+                                        <template x-for="prod in productosFiltrados" :key="prod.id_producto">
+                                            <option :value="prod.id_producto" x-text="prod.nombre"></option>
                                         </template>
                                     </select>
                                 </div>
@@ -99,11 +93,11 @@
                             <h3 class="text-xl font-semibold mb-4">Productos en la Lista (<span x-text="productosSeleccionados.length"></span>)</h3>
 
                             <div class="space-y-3">
-                                <template x-for="(producto, index) in productosSeleccionados" :key="producto.id">
+                                <template x-for="(producto, index) in productosSeleccionados" :key="producto.id_producto">
                                     <div class="flex items-center space-x-4 p-3 border rounded-md dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
-                                        <span x-text="producto.name" class="font-medium flex-1 text-gray-900 dark:text-gray-100"></span>
+                                        <span x-text="producto.nombre" class="font-medium flex-1 text-gray-900 dark:text-gray-100"></span>
                                         
-                                        <input type="hidden" :name="'productos[' + index + '][producto_id]'" :value="producto.id">
+                                        <input type="hidden" :name="'productos[' + index + '][id_producto]'" :value="producto.id_producto">
 
                                         <div class="w-1/5">
                                             <input type="number"

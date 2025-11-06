@@ -2,27 +2,32 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Producto extends Model
 {
+    use HasFactory;
+
+    protected $primaryKey = 'id_producto';
+    public $incrementing = true;
+    protected $keyType = 'string';
+
     protected $fillable = [
-        'name', 'cantidad', 'imagen', 'completed', 'categoria_id'
+        'nombre',
+        'id_categoria',
+        'unidad_medida',
     ];
 
-    protected $casts = [
-        'completed' => 'boolean',
-    ];
-
+    // 🧾 Categoría del producto
     public function categoria()
     {
-        return $this->belongsTo(Categoria::class, 'categoria_id');
+        return $this->belongsTo(Categoria::class, 'id_categoria');
     }
 
-    public function listas()
+    // 📋 Listas donde aparece este producto
+    public function items()
     {
-        return $this->belongsToMany(Lista::class, 'item_lista', 'producto_id', 'lista_id')
-                    ->withPivot('cantidad', 'comprado', 'notas')
-                    ->withTimestamps();
+        return $this->hasMany(ItemLista::class, 'id_producto');
     }
 }

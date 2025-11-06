@@ -24,7 +24,7 @@ class Lista extends Model
     // 🧍‍♂️ Usuario creador
     public function creador()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'owner_id');
     }
 
     // 👥 Usuarios con acceso compartido

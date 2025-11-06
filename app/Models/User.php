@@ -50,7 +50,7 @@ class User extends Authenticatable
     // 🔗 Relaciones
     public function listasCreadas()
     {
-        return $this->hasMany(Lista::class, 'user_id');
+        return $this->hasMany(Lista::class, 'owner_id');
     }
 
     /**

@@ -19,7 +19,6 @@ class GoogleController extends Controller
     public function callback()
     {
         try {
-            // usa el flujo con estado (session) — evita stateless()
             $googleUser = Socialite::driver('google')->user();
 
             $user = User::updateOrCreate(
@@ -35,7 +34,6 @@ class GoogleController extends Controller
 
             return redirect()->intended('/');
         } catch (InvalidStateException $e) {
-            // restart OAuth flow (evita mostrar excepción "state")
             Log::warning('Google OAuth invalid state: '.$e->getMessage());
             return Socialite::driver('google')->redirect();
         } catch (\Throwable $e) {

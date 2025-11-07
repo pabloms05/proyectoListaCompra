@@ -28,9 +28,10 @@ class GoogleController extends Controller
                 'password' => bcrypt(str()->random(16)), // contraseña aleatoria
             ]);
 
-            Auth::login($user);
+            Auth::guard('web')->login($user);
+            request()->session()->regenerate(); // ✅ fuerza nueva cookie de sesión válida
 
-            return redirect('/dashboard'); // o a tu vista principal
+            return redirect()->intended('/dashboard');
         } catch (\Exception $e) {
             return redirect('/login')->with('error', 'Error al iniciar sesión con Google.');
         }

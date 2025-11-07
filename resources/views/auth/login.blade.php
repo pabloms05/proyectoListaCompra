@@ -176,15 +176,15 @@
             </div>
 
             <!-- Botón de Google -->
-            <div class="mt-4 flex justify-center">
+            <div class="mt-6 flex justify-center">
                 <a href="{{ route('google.redirect') }}"
-                    class="inline-flex items-center px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">
-                    <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
-                        <path fill="currentColor" d="M488 261.8C488 403.3..." />
-                    </svg>
-                    Iniciar sesión con Google
+                    class="flex items-center gap-2 px-5 py-2 rounded-full bg-white text-gray-800 font-semibold shadow-md hover:shadow-lg hover:bg-gray-100 transition-transform transform hover:-translate-y-0.5">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo"
+                        class="w-5 h-5">
+                    <span>Iniciar sesión con Google</span>
                 </a>
             </div>
+
         </form>
 
         <!-- Separador -->

@@ -56,12 +56,30 @@
                                     <div class="space-y-3">
                                         @foreach($productos as $producto)
                                             <div class="flex items-center bg-gray-50 dark:bg-gray-800 p-4 rounded-lg hover:shadow-md transition-shadow">
+                                                
+                                                <!-- Botón de marcar como comprado -->
+                                                <form action="{{ route('listas.alternarComprado', $lista) }}" method="POST" class="mr-3">
+                                                    @csrf
+                                                    <input type="hidden" name="producto_id" value="{{ $producto->id_producto }}">
+                                                    <button type="submit" 
+                                                            class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors {{ $producto->pivot->comprado ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500' }}"
+                                                            title="{{ $producto->pivot->comprado ? 'Marcar como pendiente' : 'Marcar como comprado' }}">
+                                                        @if($producto->pivot->comprado)
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                                            </svg>
+                                                        @else
+                                                            <span class="text-gray-400 text-xs">○</span>
+                                                        @endif
+                                                    </button>
+                                                </form>
+
                                                 @if($producto->image_path)
                                                     <img src="{{ Storage::url($producto->image_path) }}"
                                                         alt="{{ $producto->name }}"
-                                                        class="w-20 h-20 object-cover rounded-md mr-4">
+                                                        class="w-20 h-20 object-cover rounded-md mr-4 {{ $producto->pivot->comprado ? 'opacity-50' : '' }}">
                                                 @else
-                                                    <div class="w-20 h-20 bg-gray-300 dark:bg-gray-600 rounded-md mr-4 flex items-center justify-center">
+                                                    <div class="w-20 h-20 bg-gray-300 dark:bg-gray-600 rounded-md mr-4 flex items-center justify-center {{ $producto->pivot->comprado ? 'opacity-50' : '' }}">
                                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                                                         </svg>
@@ -69,11 +87,11 @@
                                                 @endif
 
                                                 <div class="flex-1">
-                                                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white">
+                                                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white {{ $producto->pivot->comprado ? 'line-through opacity-60' : '' }}">
                                                         {{ $producto->name }}
                                                     </h4>
                                                     <div class="flex items-center space-x-4 mt-1">
-                                                        <p class="text-sm text-gray-600 dark:text-gray-300">
+                                                        <p class="text-sm text-gray-600 dark:text-gray-300 {{ $producto->pivot->comprado ? 'line-through opacity-60' : '' }}">
                                                             <span class="font-medium">Cantidad:</span> 
                                                             <span class="text-indigo-600 dark:text-indigo-400 font-bold">{{ $producto->pivot->cantidad ?? 1 }}</span>
                                                             @if($producto->unidad_medida)
@@ -91,7 +109,7 @@
                                                         @endif
                                                     </div>
                                                     @if($producto->pivot->notas)
-                                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 {{ $producto->pivot->comprado ? 'line-through opacity-60' : '' }}">
                                                             📝 {{ $producto->pivot->notas }}
                                                         </p>
                                                     @endif

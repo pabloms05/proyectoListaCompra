@@ -242,4 +242,41 @@ class ListaController extends Controller
         return redirect()->route('listas.propias')
             ->with('success', 'La lista "' . $lista->name . '" ha sido eliminada exitosamente.');
     }
+
+    /**
+     * Cambiar el estado de 'comprado' de un producto en la lista.
+     */
+    public function alternarComprado(Request $request, Lista $lista)
+    {
+        $usuario = Auth::user();
+
+        // Verificar que el usuario tenga acceso a la lista
+        if (!$lista->userHasAccess($usuario->id)) {
+            abort(403, "No tienes permiso para modificar esta lista.");
+        }
+
+        // Validar que se reciba el producto_id
+        $request->validate([
+            'producto_id' => 'required|exists:productos,id_producto',
+        ]);
+
+        $productoId = $request->producto_id;
+
+        // Obtener el producto de la lista con su estado actual
+        $producto = $lista->productos()->where('item_lista.id_producto', $productoId)->first();
+
+        if (!$producto) {
+            return back()->with('error', 'Producto no encontrado en esta lista.');
+        }
+
+        // Cambiar el estado de 'comprado' (alternar)
+        $nuevoEstado = !$producto->pivot->comprado;
+
+        // Actualizar el estado en la tabla pivot
+        $lista->productos()->updateExistingPivot($productoId, [
+            'comprado' => $nuevoEstado
+        ]);
+
+        return back()->with('success', $nuevoEstado ? 'Producto marcado como comprado.' : 'Producto desmarcado.');
+    }
 }

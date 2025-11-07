@@ -33,6 +33,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/listas/compartidas', [ListaController::class, 'compartidas'])->name('listas.compartidas');
     Route::get('/listas-compartidas', [ListaController::class, 'compartidas'])->name('listas-compartidas'); // Alias
     Route::post('/listas/{lista}/share', [ListaController::class, 'share'])->name('listas.share');
+    Route::post('/listas/{lista}/alternar-comprado', [ListaController::class, 'alternarComprado'])->name('listas.alternarComprado');
     Route::resource('listas', ListaController::class);
     
     // Rutas de Categorías

@@ -128,6 +128,47 @@
                 gap: .6rem;
             }
         }
+
+        .register-btn {
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+            font-weight: 600;
+            padding: .8rem 1.4rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .register-btn:hover {
+            background: rgba(255, 255, 255, 0.18);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .register-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: translateX(-100%);
+        }
+
+        .register-btn:hover::after {
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            100% {
+                transform: translateX(100%);
+            }
+        }
     </style>
 
     <div class="box" role="main" aria-labelledby="login-title">
@@ -176,12 +217,10 @@
             </div>
 
             <!-- Botón de Google -->
-            <div class="mt-6 flex justify-center">
-                <a href="{{ route('google.redirect') }}"
-                    class="flex items-center gap-2 px-5 py-2 rounded-full bg-white text-gray-800 font-semibold shadow-md hover:shadow-lg hover:bg-gray-100 transition-transform transform hover:-translate-y-0.5">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo"
-                        class="w-5 h-5">
-                    <span>Iniciar sesión con Google</span>
+            <div style="margin-top:1.5rem; display:flex; gap:.7rem; justify-content:center;">
+                <a href="{{ route('google.redirect') }}" class="google-btn" aria-label="Iniciar sesión con Google">
+                    <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google">
+                    <span>Iniciar con Google</span>
                 </a>
             </div>
 
@@ -194,8 +233,7 @@
 
         <!-- Botón de registro -->
         <div style="display:flex; justify-content:center;">
-            <a href="{{ route('register') }}" class="primary-btn"
-                style="text-decoration:none; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">
+            <a href="{{ route('register') }}" class="register-btn">
                 Crear cuenta nueva
             </a>
         </div>

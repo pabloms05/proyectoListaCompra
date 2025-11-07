@@ -1,8 +1,5 @@
 <x-app-layout>
-    <div class="py-12" x-data="{
-        // Solo mantenemos el modal de Compartir, ya que es una acción de la lista, no de edición de contenido.
-        showCompartirModal: false
-    }">
+    <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
@@ -11,18 +8,37 @@
                         <div>
                             <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ $lista->name }}</h1>
                             <p class="text-gray-600 dark:text-gray-400 mt-2">{{ $lista->description }}</p>
+                            
+                            {{-- Indicador de rol --}}
+                            @if(!$isOwner)
+                                <div class="mt-2">
+                                    @if($userRole === 'editor')
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            📝 Editor - Puedes modificar
+                                        </span>
+                                    @elseif($userRole === 'lector')
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                            👁️ Lector - Solo lectura
+                                        </span>
+                                    @endif
+                                </div>
+                            @endif
                         </div>
 
                         <div class="flex space-x-3">
                             
-                            @if($isOwner)
+                            {{-- Botón Editar: para owner y editor --}}
+                            @if($userRole === 'owner' || $userRole === 'editor')
                                 <a href="{{ route('listas.edit', $lista) }}" class="inline-flex items-center px-4 py-2 bg-yellow-600 rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-yellow-700">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                     </svg>
                                     Editar
                                 </a>
+                            @endif
 
+                            {{-- Botón Eliminar: SOLO para owner --}}
+                            @if($isOwner)
                                 <form action="{{ route('listas.destroy', $lista) }}" method="POST" class="inline">
                                     @csrf
                                     @method('DELETE')
@@ -35,7 +51,9 @@
                                 </form>
                             @endif
                             
-                            <a href="{{ route('listas.propias') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                            {{-- Botón Volver: cambia según si es compartida o propia --}}
+                            <a href="{{ $isSharedWithMe ? route('listas-compartidas') : route('listas.propias') }}" 
+                               class="inline-flex items-center px-4 py-2 bg-gray-600 rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                                 </svg>
@@ -57,13 +75,27 @@
                                         @foreach($productos as $producto)
                                             <div class="flex items-center bg-gray-50 dark:bg-gray-800 p-4 rounded-lg hover:shadow-md transition-shadow">
                                                 
-                                                <!-- Botón de marcar como comprado -->
-                                                <form action="{{ route('listas.alternarComprado', $lista) }}" method="POST" class="mr-3">
-                                                    @csrf
-                                                    <input type="hidden" name="producto_id" value="{{ $producto->id_producto }}">
-                                                    <button type="submit" 
-                                                            class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors {{ $producto->pivot->comprado ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500' }}"
-                                                            title="{{ $producto->pivot->comprado ? 'Marcar como pendiente' : 'Marcar como comprado' }}">
+                                                <!-- Botón de marcar como comprado (solo para owner y editor) -->
+                                                @if($userRole === 'owner' || $userRole === 'editor')
+                                                    <form action="{{ route('listas.alternarComprado', $lista) }}" method="POST" class="mr-3">
+                                                        @csrf
+                                                        <input type="hidden" name="producto_id" value="{{ $producto->id_producto }}">
+                                                        <button type="submit" 
+                                                                class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors {{ $producto->pivot->comprado ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500' }}"
+                                                                title="{{ $producto->pivot->comprado ? 'Marcar como pendiente' : 'Marcar como comprado' }}">
+                                                            @if($producto->pivot->comprado)
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                                                </svg>
+                                                            @else
+                                                                <span class="text-gray-400 text-xs">○</span>
+                                                            @endif
+                                                        </button>
+                                                    </form>
+                                                @else
+                                                    {{-- Solo mostrar el estado para lectores --}}
+                                                    <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mr-3 {{ $producto->pivot->comprado ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600' }}"
+                                                         title="Solo lectura">
                                                         @if($producto->pivot->comprado)
                                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
                                                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
@@ -71,8 +103,8 @@
                                                         @else
                                                             <span class="text-gray-400 text-xs">○</span>
                                                         @endif
-                                                    </button>
-                                                </form>
+                                                    </div>
+                                                @endif
 
                                                 @if($producto->image_path)
                                                     <img src="{{ Storage::url($producto->image_path) }}"
@@ -140,7 +172,10 @@
                                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Gestión de Lista</h3>
                                     
                                     <div class="mb-4">
-                                        <button type="button" @click="showCompartirModal = true" class="inline-flex items-center px-4 py-2 bg-green-600 rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 w-full justify-center">
+                                        <button 
+                                            type="button" 
+                                            onclick="abrirModalCompartir({{ $lista->id_lista }})" 
+                                            class="inline-flex items-center px-4 py-2 bg-green-600 rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 w-full justify-center">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                                             </svg>
@@ -161,56 +196,30 @@
                                     </div>
                                 </div>
                             @endif
+                            
+                            {{-- Sección de usuarios compartidos (solo para propietario) --}}
+                            @if($isOwner)
+                                @include('components.seccion-usuarios-compartidos')
+                            @endif
                         </div>
 
                     </div>
                 </div>
             </div>
         </div>
-
-        <div x-show="showCompartirModal" class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true" style="display: none;">
-            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div x-show="showCompartirModal" @click="showCompartirModal = false" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
-                <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                    <div class="p-6">
-                        <h3 class="text-lg font-medium mb-4 text-gray-900 dark:text-white">Compartir Lista</h3>
-                        <form action="{{ route('listas.share', $lista) }}" method="POST" class="space-y-4">
-                            @csrf
-                            <div>
-                                <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email del usuario</label>
-                                <input type="email"
-                                        name="email"
-                                        id="email"
-                                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 text-sm p-2"
-                                        required>
-                            </div>
-
-                            <div>
-                                <label for="role" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Rol</label>
-                                <select name="role"
-                                        id="role"
-                                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 text-sm p-2"
-                                        required>
-                                    <option value="viewer">Solo lectura</option>
-                                    <option value="editor">Editor</option>
-                                </select>
-                            </div>
-
-                            <div class="flex justify-end space-x-3">
-                                <button type="button"
-                                        @click="showCompartirModal = false"
-                                        class="inline-flex items-center px-3 py-2 border dark:border-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-300">
-                                    Cancelar
-                                </button>
-                                <button type="submit"
-                                        class="inline-flex items-center px-3 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700">
-                                    Compartir
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
+    
+    {{-- Incluir el modal de compartir --}}
+    @include('components.modal-compartir-lista')
+    
+    {{-- Scripts --}}
+    <script src="{{ asset('js/compartir-lista.js') }}"></script>
+    <script>
+        // Cargar usuarios compartidos al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            @if($isOwner)
+            cargarUsuariosCompartidos({{ $lista->id_lista }});
+            @endif
+        });
+    </script>
 </x-app-layout>

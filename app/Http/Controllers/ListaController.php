@@ -64,13 +64,29 @@ class ListaController extends Controller
 
         // Indicar si el usuario es propietario
         $isOwner = $lista->owner_id === $user->id;
+        
+        // Obtener el rol del usuario (si no es owner, buscar en la tabla pivot)
+        $userRole = 'viewer'; // Por defecto
+        if ($isOwner) {
+            $userRole = 'owner';
+        } else {
+            $sharedUser = $lista->usuariosCompartidos()
+                ->where('user_id', $user->id)
+                ->first();
+            if ($sharedUser) {
+                $userRole = $sharedUser->pivot->role; // 'editor' o 'lector'
+            }
+        }
+        
+        // Determinar si es una lista compartida con el usuario (no es owner)
+        $isSharedWithMe = !$isOwner;
 
         // Agrupar productos por categoría
         $productosPorCategoria = $lista->productos->groupBy(function ($producto) {
             return $producto->categoria ? $producto->categoria->nombre : 'Sin categoría';
         });
 
-        return view('listas.show', compact('lista', 'isOwner', 'productosPorCategoria'));
+        return view('listas.show', compact('lista', 'isOwner', 'userRole', 'isSharedWithMe', 'productosPorCategoria'));
     }
 
     /**
@@ -156,8 +172,20 @@ class ListaController extends Controller
     public function edit(Lista $lista)
     {
         $user = Auth::user();
-        if ($lista->owner_id !== $user->id) {
-            abort(403, "No tienes permiso para editar esta lista.");
+        
+        // Verificar si es propietario
+        $isOwner = $lista->owner_id === $user->id;
+        
+        // Si no es propietario, verificar si es editor
+        if (!$isOwner) {
+            $sharedUser = $lista->usuariosCompartidos()
+                ->where('user_id', $user->id)
+                ->first();
+            
+            // Si no está compartida con él o es lector, denegar acceso
+            if (!$sharedUser || $sharedUser->pivot->role === 'lector') {
+                abort(403, "No tienes permiso para editar esta lista.");
+            }
         }
 
         // 1. Obtener todas las categorías con sus productos para los SELECTS
@@ -176,9 +204,18 @@ class ListaController extends Controller
     {
         $user = Auth::user();
 
-        // 1. Autorización
-        if ($lista->owner_id !== $user->id) {
-            abort(403, "No tienes permiso para actualizar esta lista.");
+        // 1. Autorización: verificar si es propietario o editor
+        $isOwner = $lista->owner_id === $user->id;
+        
+        if (!$isOwner) {
+            $sharedUser = $lista->usuariosCompartidos()
+                ->where('user_id', $user->id)
+                ->first();
+            
+            // Si no está compartida con él o es lector, denegar acceso
+            if (!$sharedUser || $sharedUser->pivot->role === 'lector') {
+                abort(403, "No tienes permiso para actualizar esta lista.");
+            }
         }
 
         // 2. Validación de los datos (Misma que en store)
@@ -253,6 +290,18 @@ class ListaController extends Controller
         // Verificar que el usuario tenga acceso a la lista
         if (!$lista->userHasAccess($usuario->id)) {
             abort(403, "No tienes permiso para modificar esta lista.");
+        }
+        
+        // Verificar que el usuario sea propietario o editor (NO lector)
+        $isOwner = $lista->owner_id === $usuario->id;
+        if (!$isOwner) {
+            $sharedUser = $lista->usuariosCompartidos()
+                ->where('user_id', $usuario->id)
+                ->first();
+            
+            if (!$sharedUser || $sharedUser->pivot->role === 'lector') {
+                abort(403, "No tienes permisos de edición en esta lista. Solo el propietario y editores pueden marcar productos.");
+            }
         }
 
         // Validar que se reciba el producto_id

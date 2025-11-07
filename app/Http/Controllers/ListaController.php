@@ -103,6 +103,11 @@ class ListaController extends Controller
             // Validar que cada producto_id exista y que la cantidad sea un entero > 0
             'productos.*.producto_id' => 'required|exists:productos,id_producto',
             'productos.*.cantidad' => 'required|integer|min:1',
+            // Validar productos nuevos
+            'nuevos_productos' => 'nullable|array',
+            'nuevos_productos.*.nombre' => 'required|string|max:255',
+            'nuevos_productos.*.categoria_id' => 'required|exists:categorias,id_categoria',
+            'nuevos_productos.*.cantidad' => 'required|integer|min:1',
         ]);
 
         // 2. Crear la Lista principal
@@ -113,21 +118,44 @@ class ListaController extends Controller
             'compartida' => false,
         ]);
 
-        // 3. Vinculación de Productos (attach)
+        // 3. Procesar nuevos productos primero
+        $nuevosProductosCreados = [];
+        if ($request->has('nuevos_productos')) {
+            foreach ($request->nuevos_productos as $nuevoProducto) {
+                // Crear el producto en la base de datos
+                $producto = \App\Models\Producto::create([
+                    'name' => $nuevoProducto['nombre'],
+                    'categoria_id' => $nuevoProducto['categoria_id'],
+                    'unidad_medida' => 'unidad', // Valor por defecto
+                ]);
+                
+                // Guardar para vincular después
+                $nuevosProductosCreados[$producto->id_producto] = [
+                    'cantidad' => $nuevoProducto['cantidad']
+                ];
+            }
+        }
+
+        // 4. Vinculación de Productos existentes (attach)
+        $productsToAttach = [];
         if ($request->has('productos')) {
-            $productsToAttach = [];
             foreach ($request->productos as $productData) {
                 $productsToAttach[$productData['producto_id']] = [
                     'cantidad' => $productData['cantidad']
-                    // Si necesitas guardar el categoria_id en la pivot:
-                    // 'categoria_id' => Producto::find($productData['producto_id'])->categoria_id
                 ];
             }
-            // Adjuntar los productos a la lista, incluyendo la cantidad
-            $lista->productos()->attach($productsToAttach);
         }
 
-        // 4. Redirección
+        // Combinar productos existentes con los nuevos creados
+        // Usamos + en lugar de array_merge para preservar las claves numéricas
+        $allProductsToAttach = $productsToAttach + $nuevosProductosCreados;
+        
+        // Adjuntar todos los productos a la lista
+        if (!empty($allProductsToAttach)) {
+            $lista->productos()->attach($allProductsToAttach);
+        }
+
+        // 5. Redirección
         return redirect()->route('listas.show', $lista)
             ->with('success', 'Lista creada exitosamente y productos vinculados.');
     }
@@ -218,13 +246,18 @@ class ListaController extends Controller
             }
         }
 
-        // 2. Validación de los datos (Misma que en store)
+        // 2. Validación de los datos
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'productos' => 'nullable|array',
             'productos.*.producto_id' => 'required|exists:productos,id_producto',
             'productos.*.cantidad' => 'required|integer|min:1',
+            // Validar productos nuevos
+            'nuevos_productos' => 'nullable|array',
+            'nuevos_productos.*.nombre' => 'required|string|max:255',
+            'nuevos_productos.*.categoria_id' => 'required|exists:categorias,id_categoria',
+            'nuevos_productos.*.cantidad' => 'required|integer|min:1',
         ]);
 
         // 3. Actualización de la lista principal
@@ -233,7 +266,25 @@ class ListaController extends Controller
             'description' => $request->description,
         ]);
 
-        // 4. Sincronización de Productos (sync)
+        // 4. Procesar nuevos productos primero
+        $nuevosProductosCreados = [];
+        if ($request->has('nuevos_productos')) {
+            foreach ($request->nuevos_productos as $nuevoProducto) {
+                // Crear el producto en la base de datos
+                $producto = \App\Models\Producto::create([
+                    'name' => $nuevoProducto['nombre'],
+                    'categoria_id' => $nuevoProducto['categoria_id'],
+                    'unidad_medida' => 'unidad', // Valor por defecto
+                ]);
+                
+                // Guardar para vincular después
+                $nuevosProductosCreados[$producto->id_producto] = [
+                    'cantidad' => $nuevoProducto['cantidad']
+                ];
+            }
+        }
+
+        // 5. Sincronización de Productos existentes
         $syncData = [];
         if ($request->has('productos')) {
             foreach ($request->productos as $productData) {
@@ -245,10 +296,14 @@ class ListaController extends Controller
             }
         }
 
-        // Sincronizar la relación Muchos a Muchos. Esto añade, actualiza o elimina productos.
-        $lista->productos()->sync($syncData);
+        // Combinar productos existentes con los nuevos creados
+        // Usamos + en lugar de array_merge para preservar las claves numéricas
+        $allProductsToSync = $syncData + $nuevosProductosCreados;
 
-        // 5. Redirección
+        // Sincronizar la relación Muchos a Muchos. Esto añade, actualiza o elimina productos.
+        $lista->productos()->sync($allProductsToSync);
+
+        // 6. Redirección
         return redirect()->route('listas.show', $lista)
             ->with('success', 'Lista "' . $lista->name . '" actualizada y sincronizada exitosamente.');
     }

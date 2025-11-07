@@ -29,7 +29,7 @@ class Lista extends Model
     public function usuariosCompartidos()
     {
         return $this->belongsToMany(User::class, 'lista_user', 'id_lista', 'user_id')
-            ->withPivot('role', 'estado')
+            ->withPivot('role')
             ->withTimestamps();
     }
 

@@ -85,8 +85,7 @@ class CompartirListaController extends Controller
 
         // Compartir la lista
         $lista->usuariosCompartidos()->attach($usuarioDestino->id, [
-            'role' => $request->rol,
-            'estado' => 'aceptado'
+            'role' => $request->rol
         ]);
 
         // Marcar la lista como compartida
@@ -186,30 +185,43 @@ class CompartirListaController extends Controller
      */
     public function compartidasConmigo()
     {
-        $usuario = Auth::user();
-        
-        $listasCompartidas = $usuario->sharedLists()
-            ->with('creador:id,name,email') // 'creador' es la relación en el modelo Lista
-            ->get()
-            ->map(function($lista) {
-                // Verificar que la relación creador existe
-                $propietario = $lista->creador ?? $lista->owner;
-                
-                return [
-                    'id' => $lista->id_lista,
-                    'nombre' => $lista->name,
-                    'descripcion' => $lista->description,
-                    'rol' => $lista->pivot->role ?? 'lector',
-                    'fecha_compartida' => $lista->pivot->created_at,
-                    'propietario' => [
-                        'id' => $propietario->id,
-                        'nombre' => $propietario->name,
-                        'email' => $propietario->email
-                    ]
-                ];
-            });
+        try {
+            $usuario = Auth::user();
+            
+            $listasCompartidas = $usuario->sharedLists()
+                ->with('creador:id,name,email')
+                ->get()
+                ->map(function($lista) {
+                    // Verificar que la relación creador existe
+                    $propietario = $lista->creador;
+                    
+                    if (!$propietario) {
+                        // Si no existe la relación, intentar cargarla manualmente
+                        $propietario = \App\Models\User::find($lista->owner_id);
+                    }
+                    
+                    return [
+                        'id' => $lista->id_lista,
+                        'nombre' => $lista->name,
+                        'descripcion' => $lista->description,
+                        'rol' => $lista->pivot->role ?? 'lector',
+                        'fecha_compartida' => $lista->pivot->created_at ? $lista->pivot->created_at->format('Y-m-d H:i:s') : null,
+                        'propietario' => [
+                            'id' => $propietario->id ?? null,
+                            'nombre' => $propietario->name ?? 'Desconocido',
+                            'email' => $propietario->email ?? ''
+                        ]
+                    ];
+                });
 
-        return response()->json($listasCompartidas);
+            return response()->json($listasCompartidas);
+        } catch (\Exception $e) {
+            \Log::error('Error en compartidasConmigo: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Error al cargar listas compartidas',
+                'mensaje' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -217,29 +229,37 @@ class CompartirListaController extends Controller
      */
     public function obtenerUsuariosCompartidos($id)
     {
-        $lista = Lista::findOrFail($id);
+        try {
+            $lista = Lista::findOrFail($id);
 
-        // Verificar que el usuario actual es el propietario
-        if ($lista->owner_id !== Auth::id()) {
+            // Verificar que el usuario actual es el propietario
+            if ($lista->owner_id !== Auth::id()) {
+                return response()->json([
+                    'exito' => false,
+                    'mensaje' => 'No tienes permisos para ver esta información'
+                ], 403);
+            }
+
+            $usuariosCompartidos = $lista->usuariosCompartidos()
+                ->withPivot('role')
+                ->select('users.id', 'users.name', 'users.email')
+                ->get()
+                ->map(function($usuario) {
+                    return [
+                        'id' => $usuario->id,
+                        'nombre' => $usuario->name,
+                        'email' => $usuario->email,
+                        'rol' => $usuario->pivot->role ?? 'viewer',
+                        'fecha_compartida' => $usuario->pivot->created_at ?? null
+                    ];
+                });
+
+            return response()->json($usuariosCompartidos);
+        } catch (\Exception $e) {
             return response()->json([
                 'exito' => false,
-                'mensaje' => 'No tienes permisos para ver esta información'
-            ], 403);
+                'mensaje' => 'Error al cargar usuarios: ' . $e->getMessage()
+            ], 500);
         }
-
-        $usuariosCompartidos = $lista->usuariosCompartidos()
-            ->select('users.id', 'users.name', 'users.email')
-            ->get()
-            ->map(function($usuario) {
-                return [
-                    'id' => $usuario->id,
-                    'nombre' => $usuario->name,
-                    'email' => $usuario->email,
-                    'rol' => $usuario->pivot->role,
-                    'fecha_compartida' => $usuario->pivot->created_at
-                ];
-            });
-
-        return response()->json($usuariosCompartidos);
     }
 };

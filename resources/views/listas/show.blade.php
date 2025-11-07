@@ -213,7 +213,8 @@
     @include('components.modal-compartir-lista')
     
     {{-- Scripts --}}
-    <script src="{{ asset('js/compartir-lista.js') }}"></script>
+    @vite(['resources/js/app.js'])
+    <script src="{{ asset('js/compartir-lista.js') }}" defer></script>
     <script>
         // Cargar usuarios compartidos al cargar la página
         document.addEventListener('DOMContentLoaded', function() {

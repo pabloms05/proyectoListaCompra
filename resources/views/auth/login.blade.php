@@ -170,6 +170,13 @@
             }
         }
     </style>
+    <x-slot name="navbar">
+        <div class="flex items-center justify-between w-full">
+            <a href="{{ route('welcome') }}"
+                class="px-4 py-2 bg-white/10 text-white font-semibold rounded-lg backdrop-blur-md hover:bg-white/20 transition flex items-center space-x-2">
+                🏠 <span>Inicio</span>
+            </a>
+    </x-slot>
 
     <div class="box" role="main" aria-labelledby="login-title">
         <h1 id="login-title">Iniciar sesión</h1>

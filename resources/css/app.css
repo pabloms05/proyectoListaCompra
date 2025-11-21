@@ -1,3 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ---- FORZAR SELECTS OSCUROS ---- */
+select {
+    @apply bg-gray-800 text-white border border-white/20 rounded-md appearance-none;
+}
+
+/* Estilo del dropdown desplegado en navegadores basados en WebKit */
+select option {
+    @apply bg-gray-800 text-white;
+}
+

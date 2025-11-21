@@ -57,6 +57,14 @@
       @media (max-width:560px){ .box{ padding:1.4rem; margin:1rem; } .row{ flex-direction:column-reverse; gap:.6rem; } }
     </style>
 
+    <x-slot name="navbar">
+        <div class="flex items-center justify-between w-full">
+            <a href="{{ route('welcome') }}"
+                class="px-4 py-2 bg-white/10 text-white font-semibold rounded-lg backdrop-blur-md hover:bg-white/20 transition flex items-center space-x-2">
+                🏠 <span>Inicio</span>
+            </a>
+    </x-slot>
+
     <div class="box" role="main" aria-labelledby="register-title">
       <h1 id="register-title">Crear cuenta</h1>
       <p class="lead">Regístrate para crear y compartir tus listas de compra.</p>
